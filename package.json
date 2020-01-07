@@ -5,10 +5,16 @@
   "main": "index.js",
   "scripts": {
     "db:start": "docker-compose up -d db",
-    "db:stop": "docker-compose down"
+    "db:stop": "docker-compose down",
+    "migrate": "node-pg-migrate"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "express": "^4.17.1",
+    "massive": "^6.1.4",
+    "node-pg-migrate": "^3.21.0",
+    "pg": "^7.11.0"
+  }
 }

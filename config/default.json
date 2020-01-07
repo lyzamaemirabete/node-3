@@ -1,0 +1,9 @@
+{
+  "db": {
+    "user": "postgres",
+    "password": "node3db",
+    "host": "localhost",
+    "port": 5432,
+    "database": "node3"
+  }
+}
