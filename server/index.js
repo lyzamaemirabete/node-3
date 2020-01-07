@@ -34,24 +34,24 @@ massive({
 
   //   USERS ENDPOINTS
   app.post("/api/users", users.create);
-  app.get("/api/users", users.list);
-  app.get("/api/users/:id", users.getById);
-  app.get("/api/users/:id/profile", users.getProfile);
+  app.get("/api/users", auth, users.list);
+  app.get("/api/users/:id", auth, users.getById);
+  app.get("/api/users/:id/profile", auth, users.getProfile);
 
   // LOGIN
   app.post("/api/login", auth, users.login);
-  app.get("/api/login", users.loginList);
+  app.get("/api/login", auth, users.loginList);
 
   //POSTS ENDPOINTS
-  app.post("/api/posts/:userId", posts.create);
-  app.get("/api/posts", posts.allPosts);
-  app.get("/api/posts/:id/comments", posts.viewPostByPostId);
-  app.get("/api/users/:userId/posts", posts.viewPostsByUserId);
-  app.patch("/api/posts/:postId", posts.updatePost);
+  app.post("/api/posts/:userId", auth, posts.create);
+  app.get("/api/posts", auth, posts.allPosts);
+  app.get("/api/posts/:id/comments", auth, posts.viewPostByPostId);
+  app.get("/api/users/:userId/posts", auth, posts.viewPostsByUserId);
+  app.patch("/api/posts/:postId", auth, posts.updatePost);
 
   //COMMENTS ENDPOINTS
-  app.post("/api/comments/:userId/:postId", comments.create);
-  app.patch("/api/comments/:commentId", comments.updateComment);
+  app.post("/api/comments/:userId/:postId", auth, comments.create);
+  app.patch("/api/comments/:commentId", auth, comments.updateComment);
 
   const PORT = 3005;
   app.listen(PORT, () => {
