@@ -3,6 +3,8 @@ const massive = require("massive");
 const users = require("./controllers/users");
 const posts = require("./controllers/posts");
 const comments = require("./controllers/comments");
+const jwt = require("jsonwebtoken");
+const secret = require("../secret");
 
 massive({
   host: "localhost",
@@ -14,8 +16,21 @@ massive({
   const app = express();
 
   app.set("db", db);
-
   app.use(express.json());
+
+  const auth = (req, res, next) => {
+    if (!req.headers.authorization) {
+      return res.status(401).end();
+    }
+    try {
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(token, secret);
+      next();
+    } catch (err) {
+      console.error(err);
+      res.status(401).end();
+    }
+  };
 
   //   USERS ENDPOINTS
   app.post("/api/users", users.create);
@@ -24,9 +39,8 @@ massive({
   app.get("/api/users/:id/profile", users.getProfile);
 
   // LOGIN
-  app.post("/api/login", users.login);
+  app.post("/api/login", auth, users.login);
   app.get("/api/login", users.loginList);
-  app.get("/api/protected/data", users.auth);
 
   //POSTS ENDPOINTS
   app.post("/api/posts/:userId", posts.create);
