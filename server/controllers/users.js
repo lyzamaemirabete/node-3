@@ -1,36 +1,39 @@
+const argon2 = require("argon2");
+const jwt = require("jsonwebtoken");
+const secret = require("../../secret");
 function create(req, res) {
   const db = req.app.get("db");
-
   const { email, password } = req.body;
-
-  db.users
-    .insert(
-      {
-        email,
-        password,
-        user_profiles: [
-          // this is what is specifying the object
-          // to insert into the related 'user_profiles' table
-          {
-            userId: undefined,
-            about: null,
-            thumbnail: null
-          }
-        ]
-      },
-      {
-        deepInsert: true // this option here tells massive to create the related object
-      }
-    )
-    .then(user => res.status(201).json(user))
+  argon2
+    .hash(password)
+    .then(hash => {
+      return db.users.insert(
+        {
+          email,
+          password: hash,
+          user_profiles: [
+            {
+              userId: undefined,
+              about: null,
+              thumbnail: null
+            }
+          ]
+        },
+        {
+          deepInsert: true
+        }
+      );
+    })
+    .then(user => {
+      const token = jwt.sign({ userId: user.id }, secret);
+      res.status(201).json({ ...user, token });
+    })
     .catch(err => {
       console.error(err);
     });
 }
-
 function list(req, res) {
   const db = req.app.get("db");
-
   db.users
     .find()
     .then(users => res.status(200).json(users))
@@ -41,7 +44,6 @@ function list(req, res) {
 }
 function getById(req, res) {
   const db = req.app.get("db");
-
   db.users
     .findOne(req.params.id)
     .then(user => res.status(200).json(user))
@@ -52,7 +54,6 @@ function getById(req, res) {
 }
 function getProfile(req, res) {
   const db = req.app.get("db");
-
   db.user_profiles
     .findOne({
       userId: req.params.id
@@ -63,10 +64,73 @@ function getProfile(req, res) {
       res.status(500).end();
     });
 }
+function auth(req, res) {
+  if (!req.headers.authorization) return res.status(401).end();
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, secret);
+    res.status(200).json({ data: "Here is the protected data" });
+  } catch (err) {
+    console.error(err);
+    res.status(401).end();
+  }
+}
 
+function login(req, res) {
+  const db = req.app.get("db");
+  const { email, password } = req.body;
+  db.users
+    .findOne(
+      {
+        email
+      },
+      {
+        fields: ["id", "email", "password"]
+      }
+    )
+    .then(user => {
+      if (!user) {
+        throw new Error("Invalid username");
+      }
+      return argon2.verify(user.password, password).then(valid => {
+        if (!valid) {
+          throw new Error("Incorrect password");
+        }
+        const token = jwt.sign({ userId: user.id }, secret);
+        delete user.password;
+        res.status(200).json({ ...user, token });
+      });
+    })
+    .catch(err => {
+      if (["Invalid username", "Incorrect password"].includes(err.message)) {
+        res.status(400).json({ error: err.message });
+      } else {
+        console.error(err);
+        res.status(500).end();
+      }
+    });
+}
+
+function loginList(req, res) {
+  if (!req.headers.authorization) {
+    return res.status(401).end();
+  }
+  const db = req.app.get("db");
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, secret);
+    db.user_login_temp.find().then(users => res.status(200).json(users));
+  } catch (err) {
+    console.error(err);
+    res.status(401).end();
+  }
+}
 module.exports = {
   create,
   list,
   getById,
-  getProfile
+  getProfile,
+  auth,
+  login,
+  loginList
 };

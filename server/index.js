@@ -23,6 +23,11 @@ massive({
   app.get("/api/users/:id", users.getById);
   app.get("/api/users/:id/profile", users.getProfile);
 
+  // LOGIN
+  app.post("/api/login", users.login);
+  app.get("/api/login", users.loginList);
+  app.get("/api/protected/data", users.auth);
+
   //POSTS ENDPOINTS
   app.post("/api/posts/:userId", posts.create);
   app.get("/api/posts", posts.allPosts);
@@ -34,7 +39,7 @@ massive({
   app.post("/api/comments/:userId/:postId", comments.create);
   app.patch("/api/comments/:commentId", comments.updateComment);
 
-  const PORT = 3001;
+  const PORT = 3005;
   app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
   });
