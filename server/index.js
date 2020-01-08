@@ -58,7 +58,3 @@ massive({
     console.log(`Server listening on port ${PORT}`);
   });
 });
-
-//   //COMMENTS ENDPOINTS
-//   app.post("/api/comments", comments.create);
-//   app.patch("/api/comments/:id", comments.updateComment);
