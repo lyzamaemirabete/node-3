@@ -53,7 +53,7 @@ massive({
   app.post("/api/comments/:userId/:postId", auth, comments.create);
   app.patch("/api/comments/:commentId", auth, comments.updateComment);
 
-  const PORT = 3005;
+  const PORT = 3001;
   app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
   });

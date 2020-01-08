@@ -3,12 +3,13 @@ const jwt = require("jsonwebtoken");
 const secret = require("../../secret");
 function create(req, res) {
   const db = req.app.get("db");
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
   argon2
     .hash(password)
     .then(hash => {
       return db.users.insert(
         {
+          username,
           email,
           password: hash,
           user_profiles: [
@@ -67,14 +68,14 @@ function getProfile(req, res) {
 
 function login(req, res) {
   const db = req.app.get("db");
-  const { email, password } = req.body;
+  const { username, password } = req.body;
   db.users
     .findOne(
       {
-        email
+        username
       },
       {
-        fields: ["id", "email", "password"]
+        fields: ["id", "username", "email", "password"]
       }
     )
     .then(user => {
